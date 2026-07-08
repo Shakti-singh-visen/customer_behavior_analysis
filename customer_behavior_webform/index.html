@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Behavior Insight Engine & Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <i data-lucide="activity"></i>
+        </div>
+        <div class="brand-text">
+          <h2>Shopping</h2>
+          <span>Behavior Hub</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <a href="#dashboard" class="menu-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#webform" class="menu-item" data-tab="webform">
+          <i data-lucide="file-input"></i>
+          <span>Add Transaction</span>
+        </a>
+        <a href="#sqlhub" class="menu-item" data-tab="sqlhub">
+          <i data-lucide="database"></i>
+          <span>SQL Query Hub</span>
+        </a>
+        <a href="#explorer" class="menu-item" data-tab="explorer">
+          <i data-lucide="table"></i>
+          <span>Data Explorer</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="database-status">
+          <span class="status-indicator online"></span>
+          <div class="status-details">
+            <span class="status-title">Dataset Status</span>
+            <span class="status-desc" id="record-count-badge">3,900 Records Loaded</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Navigation Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <h1 id="page-title">Executive Analytics Dashboard</h1>
+          <p id="page-subtitle">Real-time customer metrics and behavior profiles.</p>
+        </div>
+        <div class="header-right">
+          <div class="quick-stats">
+            <div class="quick-stat-item">
+              <span class="label">Total Revenue</span>
+              <span class="value" id="header-revenue">$0</span>
+            </div>
+            <div class="quick-stat-divider"></div>
+            <div class="quick-stat-item">
+              <span class="label">Avg Rating</span>
+              <span class="value" id="header-rating">0.0 ★</span>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="btn-header-add">
+            <i data-lucide="plus"></i>
+            <span>New Record</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-content active">
+        <!-- Dashboard Filters Bar -->
+        <div class="filters-card glass-panel">
+          <div class="filters-header">
+            <div class="filters-header-title">
+              <i data-lucide="sliders-horizontal"></i>
+              <h3>Analytical Filters</h3>
+            </div>
+            <button class="btn btn-link btn-sm" id="btn-reset-filters">
+              <i data-lucide="rotate-ccw"></i> Reset Filters
+            </button>
+          </div>
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="filter-gender">Gender</label>
+              <select id="filter-gender" class="form-control">
+                <option value="All">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-category">Category</label>
+              <select id="filter-category" class="form-control">
+                <option value="All">All Categories</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Footwear">Footwear</option>
+                <option value="Outerwear">Outerwear</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-season">Season</label>
+              <select id="filter-season" class="form-control">
+                <option value="All">All Seasons</option>
+                <option value="Spring">Spring</option>
+                <option value="Summer">Summer</option>
+                <option value="Fall">Fall</option>
+                <option value="Winter">Winter</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-subscription">Subscription</label>
+              <select id="filter-subscription" class="form-control">
+                <option value="All">All Subscription Statuses</option>
+                <option value="Yes">Subscribed</option>
+                <option value="No">Not Subscribed</option>
+              </select>
+            </div>
+            <div class="filter-group age-slider-group">
+              <div class="slider-labels">
+                <label>Age Range</label>
+                <span id="age-range-display">18 - 70</span>
+              </div>
+              <div class="range-slider-wrapper">
+                <input type="range" id="filter-age-min" min="18" max="70" value="18" class="slider-input">
+                <input type="range" id="filter-age-max" min="18" max="70" value="70" class="slider-input">
+                <div class="slider-track"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Metrics Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card glass-panel accent-purple">
+            <div class="kpi-icon">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Gross Revenue</span>
+              <h3 class="kpi-value" id="kpi-revenue">$0</h3>
+              <span class="kpi-trend trend-up"><i data-lucide="arrow-up-right"></i> Total purchases value</span>
+            </div>
+          </div>
+          <div class="kpi-card glass-panel accent-cyan">
+            <div class="kpi-icon">
+              <i data-lucide="shopping-bag"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Transactions</span>
+              <h3 class="kpi-value" id="kpi-transactions">0</h3>
+              <span class="kpi-trend trend-neutral"><i data-lucide="minus"></i> Completed checkouts</span>
+            </div>
+          </div>
+          <div class="kpi-card glass-panel accent-pink">
+            <div class="kpi-icon">
+              <i data-lucide="credit-card"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Average Order Value</span>
+              <h3 class="kpi-value" id="kpi-aov">$0.00</h3>
+              <span class="kpi-trend trend-up"><i data-lucide="arrow-up-right"></i> Basket average</span>
+            </div>
+          </div>
+          <div class="kpi-card glass-panel accent-green">
+            <div class="kpi-icon">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Loyalty Rate</span>
+              <h3 class="kpi-value" id="kpi-loyalty">0%</h3>
+              <span class="kpi-trend trend-up"><i data-lucide="arrow-up-right"></i> Purchases > 10 times</span>
+            </div>
+          </div>
+          <div class="kpi-card glass-panel accent-orange">
+            <div class="kpi-icon">
+              <i data-lucide="crown"></i>
+            </div>
+            <div class="kpi-info">
+              <span class="kpi-label">Subscription Rate</span>
+              <h3 class="kpi-value" id="kpi-subscription">0%</h3>
+              <span class="kpi-trend trend-down"><i data-lucide="arrow-down-left"></i> Premium subscribers</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Visual Layout Grid -->
+        <div class="charts-grid">
+          <!-- Chart 1: Revenue by Gender -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h4>Revenue by Gender</h4>
+              <span class="chart-subtitle">Split of sales amount between Genders</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-gender"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Revenue Contribution by Age Group -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h4>Sales by Age Cohort</h4>
+              <span class="chart-subtitle">Revenue contribution of age demographics</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-age-group"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Subscriber Comparison -->
+          <div class="chart-card glass-panel col-span-2">
+            <div class="chart-header">
+              <h4>Subscriber Loyalty Comparison</h4>
+              <span class="chart-subtitle">Comparison of sales, spend and count by subscription</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-subscriber"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Top 5 Reviewed Products -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h4>Top 5 Products by Rating</h4>
+              <span class="chart-subtitle">Products with highest review average</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-top-products"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 5: Category Distribution -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h4>Category Volume Sales</h4>
+              <span class="chart-subtitle">Total purchases count per product category</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-category"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 6: Customer Segmentation -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h4>Customer Segmentation</h4>
+              <span class="chart-subtitle">New (1), Returning (2-10) and Loyal (>10) buyers</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-segmentation"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 7: Discount & Rate -->
+          <div class="chart-card glass-panel">
+            <div class="chart-header">
+              <h4>Discount Rate by Product</h4>
+              <span class="chart-subtitle">Top 5 products with discounts applied</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-discount-rate"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: WEB FORM (ADD/EDIT TRANSACTION) -->
+      <section id="tab-webform" class="tab-content">
+        <div class="form-container">
+          <div class="form-card glass-panel">
+            <div class="form-header-badge" id="form-badge-mode">New Transaction</div>
+            
+            <div class="form-header-main">
+              <h2 id="form-title">Customer Shopping Behavior Entry Form</h2>
+              <p>Add a new customer profile and purchase record to update the dashboard instantly.</p>
+            </div>
+
+            <!-- Step Indicators -->
+            <div class="step-indicator">
+              <div class="step active" data-step="1">
+                <div class="step-circle">1</div>
+                <span class="step-label">Profile</span>
+              </div>
+              <div class="step-line"></div>
+              <div class="step" data-step="2">
+                <div class="step-circle">2</div>
+                <span class="step-label">Purchase Details</span>
+              </div>
+              <div class="step-line"></div>
+              <div class="step" data-step="3">
+                <div class="step-circle">3</div>
+                <span class="step-label">Shipping & Feedback</span>
+              </div>
+            </div>
+
+            <!-- Form Body -->
+            <form id="transaction-form" autocomplete="off" novalidate>
+              <input type="hidden" id="form-customer-id">
+
+              <!-- STEP 1: CUSTOMER PROFILE -->
+              <div class="form-step-content active" data-step="1">
+                <h3 class="step-section-title"><i data-lucide="user"></i> Customer Demographics</h3>
+                
+                <div class="form-grid">
+                  <div class="form-group-custom">
+                    <label for="form-age">Age (18 - 70)</label>
+                    <input type="number" id="form-age" min="18" max="70" class="form-control-custom" placeholder="Enter age" required>
+                    <span class="error-msg" id="err-age">Age must be between 18 and 70.</span>
+                  </div>
+                  
+                  <div class="form-group-custom">
+                    <label for="form-gender">Gender</label>
+                    <select id="form-gender" class="form-control-custom" required>
+                      <option value="" disabled selected>Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                    <span class="error-msg" id="err-gender">Please select a gender.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-location">Location (State)</label>
+                    <select id="form-location" class="form-control-custom" required>
+                      <option value="" disabled selected>Select US State</option>
+                      <!-- Will be filled dynamically by JavaScript -->
+                    </select>
+                    <span class="error-msg" id="err-location">Please select a location.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-previous-purchases">Previous Purchases</label>
+                    <input type="number" id="form-previous-purchases" min="0" max="100" class="form-control-custom" placeholder="e.g. 15" required>
+                    <span class="error-msg" id="err-prev-purchases">Must be 0 or higher.</span>
+                  </div>
+
+                  <div class="form-group-custom col-span-2 form-toggle-group">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Subscription Status</span>
+                      <span class="toggle-desc">Does this customer have an active premium shopping subscription?</span>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="form-subscription">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 2: PURCHASE DETAILS -->
+              <div class="form-step-content" data-step="2">
+                <h3 class="step-section-title"><i data-lucide="shopping-cart"></i> Item & Transaction Details</h3>
+                
+                <div class="form-grid">
+                  <div class="form-group-custom">
+                    <label for="form-category">Product Category</label>
+                    <select id="form-category" class="form-control-custom" required>
+                      <option value="" disabled selected>Select Category</option>
+                      <option value="Clothing">Clothing</option>
+                      <option value="Footwear">Footwear</option>
+                      <option value="Outerwear">Outerwear</option>
+                      <option value="Accessories">Accessories</option>
+                    </select>
+                    <span class="error-msg" id="err-form-category">Please select a category.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-item-purchased">Item Purchased</label>
+                    <select id="form-item-purchased" class="form-control-custom" required disabled>
+                      <option value="" disabled selected>Select Category First</option>
+                    </select>
+                    <span class="error-msg" id="err-item-purchased">Please select an item.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-purchase-amount">Purchase Amount (USD)</label>
+                    <div class="price-input-wrapper">
+                      <span class="currency-symbol">$</span>
+                      <input type="number" id="form-purchase-amount" min="10" max="500" class="form-control-custom has-prefix" placeholder="0" required>
+                    </div>
+                    <span class="error-msg" id="err-amount">Amount must be between $10 and $500.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-payment-method">Payment Method</label>
+                    <select id="form-payment-method" class="form-control-custom" required>
+                      <option value="" disabled selected>Select payment method</option>
+                      <option value="Credit Card">Credit Card</option>
+                      <option value="Debit Card">Debit Card</option>
+                      <option value="PayPal">PayPal</option>
+                      <option value="Venmo">Venmo</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                    <span class="error-msg" id="err-payment">Please select a payment method.</span>
+                  </div>
+
+                  <div class="form-group-custom col-span-2 form-toggle-group">
+                    <div class="toggle-info">
+                      <span class="toggle-title">Discount / Promo Applied</span>
+                      <span class="toggle-desc">Was a discount applied or promo code used on this transaction?</span>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="form-discount">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 3: SHIPPING & FEEDBACK -->
+              <div class="form-step-content" data-step="3">
+                <h3 class="step-section-title"><i data-lucide="truck"></i> Logistics & Customer Review</h3>
+                
+                <div class="form-grid">
+                  <div class="form-group-custom">
+                    <label for="form-size">Size</label>
+                    <select id="form-size" class="form-control-custom" required>
+                      <option value="" disabled selected>Select size</option>
+                      <option value="S">Small (S)</option>
+                      <option value="M">Medium (M)</option>
+                      <option value="L">Large (L)</option>
+                      <option value="XL">Extra Large (XL)</option>
+                    </select>
+                    <span class="error-msg" id="err-size">Please select a size.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-color">Color</label>
+                    <select id="form-color" class="form-control-custom" required>
+                      <option value="" disabled selected>Select color</option>
+                      <option value="Black">Black</option>
+                      <option value="White">White</option>
+                      <option value="Gray">Gray</option>
+                      <option value="Maroon">Maroon</option>
+                      <option value="Turquoise">Turquoise</option>
+                      <option value="Olive">Olive</option>
+                      <option value="Teal">Teal</option>
+                      <option value="Yellow">Yellow</option>
+                      <option value="Red">Red</option>
+                      <option value="Blue">Blue</option>
+                      <option value="Green">Green</option>
+                      <option value="Purple">Purple</option>
+                      <option value="Pink">Pink</option>
+                      <option value="Gold">Gold</option>
+                      <option value="Silver">Silver</option>
+                      <option value="Cyan">Cyan</option>
+                      <option value="Indigo">Indigo</option>
+                    </select>
+                    <span class="error-msg" id="err-color">Please select a color.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-season">Season</label>
+                    <select id="form-season" class="form-control-custom" required>
+                      <option value="" disabled selected>Select season</option>
+                      <option value="Spring">Spring</option>
+                      <option value="Summer">Summer</option>
+                      <option value="Fall">Fall</option>
+                      <option value="Winter">Winter</option>
+                    </select>
+                    <span class="error-msg" id="err-form-season">Please select a season.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-shipping">Shipping Type</label>
+                    <select id="form-shipping" class="form-control-custom" required>
+                      <option value="" disabled selected>Select shipping</option>
+                      <option value="Standard">Standard</option>
+                      <option value="Express">Express</option>
+                      <option value="2-Day Shipping">2-Day Shipping</option>
+                      <option value="Next Day Air">Next Day Air</option>
+                      <option value="Free Shipping">Free Shipping</option>
+                      <option value="Store Pickup">Store Pickup</option>
+                    </select>
+                    <span class="error-msg" id="err-shipping">Please select shipping type.</span>
+                  </div>
+
+                  <div class="form-group-custom">
+                    <label for="form-frequency">Frequency of Purchases</label>
+                    <select id="form-frequency" class="form-control-custom" required>
+                      <option value="" disabled selected>Select frequency</option>
+                      <option value="Weekly">Weekly</option>
+                      <option value="Bi-Weekly">Bi-Weekly</option>
+                      <option value="Fortnightly">Fortnightly</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Every 3 Months">Every 3 Months</option>
+                      <option value="Quarterly">Quarterly</option>
+                      <option value="Annually">Annually</option>
+                    </select>
+                    <span class="error-msg" id="err-frequency">Please select frequency.</span>
+                  </div>
+
+                  <div class="form-group-custom rating-input-group">
+                    <label>Review Rating</label>
+                    <div class="star-rating-selector" id="star-selector">
+                      <span class="star-item" data-rating="1"><i data-lucide="star"></i></span>
+                      <span class="star-item" data-rating="2"><i data-lucide="star"></i></span>
+                      <span class="star-item" data-rating="3"><i data-lucide="star"></i></span>
+                      <span class="star-item" data-rating="4"><i data-lucide="star"></i></span>
+                      <span class="star-item" data-rating="5"><i data-lucide="star"></i></span>
+                    </div>
+                    <input type="hidden" id="form-rating" required>
+                    <span class="error-msg" id="err-rating-val">Please select a rating of at least 1 star.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Buttons Panel -->
+              <div class="form-actions-panel">
+                <button type="button" class="btn btn-secondary" id="btn-form-prev" disabled>
+                  <i data-lucide="arrow-left"></i> Previous
+                </button>
+                <div class="actions-right">
+                  <button type="button" class="btn btn-outline" id="btn-form-cancel">Cancel</button>
+                  <button type="button" class="btn btn-primary" id="btn-form-next">
+                    Next <i data-lucide="arrow-right"></i>
+                  </button>
+                  <button type="submit" class="btn btn-success" id="btn-form-submit" style="display: none;">
+                    <i data-lucide="check"></i> Submit Transaction
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: SQL QUERY HUB -->
+      <section id="tab-sqlhub" class="tab-content">
+        <div class="sqlhub-layout">
+          <!-- Sidebar: List of SQL Queries -->
+          <div class="sql-sidebar glass-panel">
+            <h3>Analytical Queries</h3>
+            <span class="sidebar-sub">Select a business query to execute</span>
+            
+            <div class="sql-list" id="sql-query-menu">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+          
+          <!-- Code View & Results Display -->
+          <div class="sql-workspace">
+            <div class="workspace-card glass-panel" id="sql-workspace-card">
+              <div class="query-intro-header">
+                <span class="query-badge" id="sql-badge">QUERY 01</span>
+                <h2 id="sql-title">Query Title</h2>
+                <p id="sql-description">This query calculates the business metrics.</p>
+              </div>
+
+              <!-- Tabs: SQL Code vs JS Translation -->
+              <div class="code-tabs">
+                <button class="code-tab-btn active" data-code="sql">
+                  <i data-lucide="code-2"></i> SQL Query
+                </button>
+                <button class="code-tab-btn" data-code="js">
+                  <i data-lucide="terminal"></i> JS Execution Logic
+                </button>
+              </div>
+
+              <div class="code-viewer-container">
+                <pre class="code-block active" id="code-sql"><code class="language-sql">SELECT * FROM customer;</code></pre>
+                <pre class="code-block" id="code-js"><code class="language-javascript">// JavaScript processing logic will go here</code></pre>
+              </div>
+
+              <div class="execute-action-bar">
+                <button class="btn btn-success" id="btn-run-query">
+                  <i data-lucide="play"></i> Run Query on Dataset
+                </button>
+                <div class="query-run-info" id="query-run-time">
+                  Executed in 0.45 ms
+                </div>
+              </div>
+
+              <!-- Output Section -->
+              <div class="sql-output-section">
+                <h4>Query Results Output</h4>
+                <div class="table-scroll-container">
+                  <table class="sql-results-table" id="sql-results-table">
+                    <thead>
+                      <tr id="sql-results-header">
+                        <th>Column 1</th>
+                        <th>Column 2</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sql-results-body">
+                      <tr>
+                        <td colspan="2" class="empty-state">No query has been executed yet. Click "Run Query" above.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: DATA EXPLORER -->
+      <section id="tab-explorer" class="tab-content">
+        <div class="explorer-card glass-panel">
+          <div class="explorer-toolbar">
+            <div class="search-box-wrapper">
+              <i data-lucide="search"></i>
+              <input type="text" id="explorer-search" class="search-input" placeholder="Search by customer ID, item, color, state...">
+            </div>
+            
+            <div class="toolbar-actions">
+              <div class="select-wrapper">
+                <select id="explorer-page-size" class="form-control-compact">
+                  <option value="10">10 Rows</option>
+                  <option value="25" selected>25 Rows</option>
+                  <option value="50">50 Rows</option>
+                  <option value="100">100 Rows</option>
+                </select>
+              </div>
+              <button class="btn btn-outline" id="btn-export-csv">
+                <i data-lucide="download"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="table-scroll-container">
+            <table class="data-table" id="data-explorer-table">
+              <thead>
+                <tr>
+                  <th data-sort="customer_id" class="sortable asc">ID <span class="sort-icon"></span></th>
+                  <th data-sort="age" class="sortable">Age <span class="sort-icon"></span></th>
+                  <th data-sort="gender" class="sortable">Gender <span class="sort-icon"></span></th>
+                  <th data-sort="item_purchased" class="sortable">Item <span class="sort-icon"></span></th>
+                  <th data-sort="category" class="sortable">Category <span class="sort-icon"></span></th>
+                  <th data-sort="purchase_amount" class="sortable">Spend <span class="sort-icon"></span></th>
+                  <th data-sort="location" class="sortable">Location <span class="sort-icon"></span></th>
+                  <th data-sort="review_rating" class="sortable">Rating <span class="sort-icon"></span></th>
+                  <th data-sort="subscription_status" class="sortable">Sub <span class="sort-icon"></span></th>
+                  <th data-sort="discount_applied" class="sortable">Discount <span class="sort-icon"></span></th>
+                  <th data-sort="previous_purchases" class="sortable">Prev Purchases <span class="sort-icon"></span></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="explorer-table-body">
+                <!-- Dynamically populated by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div class="pagination-bar">
+            <span class="pagination-info" id="pagination-info">Showing 1 to 25 of 3,900 entries</span>
+            
+            <div class="pagination-controls">
+              <button class="pagination-btn" id="pagination-first" title="First Page">
+                <i data-lucide="chevrons-left"></i>
+              </button>
+              <button class="pagination-btn" id="pagination-prev" title="Previous Page">
+                <i data-lucide="chevron-left"></i>
+              </button>
+              <span class="page-number-badge" id="pagination-current-page">1 / 156</span>
+              <button class="pagination-btn" id="pagination-next" title="Next Page">
+                <i data-lucide="chevron-right"></i>
+              </button>
+              <button class="pagination-btn" id="pagination-last" title="Last Page">
+                <i data-lucide="chevrons-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Confirmation Modal for Delete -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-card glass-panel">
+      <div class="modal-icon danger">
+        <i data-lucide="trash-2"></i>
+      </div>
+      <h3>Delete Transaction Record</h3>
+      <p>Are you sure you want to permanently delete transaction record for Customer ID <strong id="delete-modal-cust-id">123</strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btn-delete-cancel">Cancel</button>
+        <button class="btn btn-danger" id="btn-delete-confirm">Delete Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Toast Alert -->
+  <div class="toast-container" id="toast-container">
+    <!-- Toasts generated dynamically by JS -->
+  </div>
+
+  <!-- Preloaded script containing customer database -->
+  <script src="js/dataset.js"></script>
+  <!-- Custom logic file -->
+  <script src="app.js"></script>
+</body>
+</html>
